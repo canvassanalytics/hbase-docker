@@ -1,0 +1,13 @@
+version: "3"
+
+services:
+  hbase:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: hbase
+
+networks:
+  default:
+    external:
+      name: datuh_network
