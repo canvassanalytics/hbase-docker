@@ -11,7 +11,7 @@ echo "Starting HBase container"
 data_dir=$PWD/data
 rm -rf $data_dir
 mkdir -p $data_dir
-id=$(docker run --name=hbase-docker -h hbase-docker -d -v $data_dir:/data dajobe/hbase)
+id=$(docker run --name=hbase-docker -h hbase-docker -d -p -v $data_dir:/data --network=datuh_network datuh/hbase-docker)
 
 echo "Container has ID $id"
 

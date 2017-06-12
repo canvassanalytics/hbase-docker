@@ -1,0 +1,96 @@
+version: '2'
+
+services:
+  # PostgreSQL database
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: 'datuhml'
+      POSTGRES_USER: 'datuhmluser'
+      POSTGRES_PASSWORD: 'datuhML4all!'
+    volumes:
+      - /data/postgresql-persist:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # RabbitMQ
+  rabbit:
+    image: rabbitmq:3-management
+    hostname: rabbit
+    environment:
+      RABBITMQ_DEFAULT_USER: 'guest'
+      RABBITMQ_DEFAULT_PASS: 'guest'
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    volumes:
+      - /data/rabbitmq-persist:/var/lib/rabbitmq
+
+  # Django web server
+  web:
+    image: datuh/datuhweb
+    hostname: web
+    environment:
+      POSTGRES_PORT_5432_TCP: 'db'
+      SERVER_HOST_NAME: '192.168.1.101' # Add the DNS or IP that will be used to connect to the website
+      RABBIT_PORT_6372_TCP: 'rabbit'
+      RABBIT_ENV_USER: 'guest'
+      RABBIT_ENV_RABBITMQ_PASS: 'guest'
+      RABBIT_ENV_VHOST: ''
+    volumes:
+      - /data/django-media:/app/media
+    command: ./run_web.sh
+    ports:
+      - "8000:8000"
+    links:
+      - db
+      - rabbit
+    depends_on:
+      - db
+
+  # Celery worker
+  worker:
+    image: datuh/datuhweb
+    hostname: worker
+    environment:
+      RABBIT_PORT_6372_TCP: 'rabbit'
+      POSTGRES_PORT_5432_TCP: 'db'
+    # command: ./run_celery.sh
+    entrypoint: ./run_celery.sh
+    links:
+      - db
+      - rabbit
+    depends_on:
+      - db
+
+  # Hbase Server
+  hbase:
+    image: datuh/hbase-docker
+    hostname: hbase
+    ports:
+      - "8080:8080" # REST API
+      - "8085:8085" # REST Web UI at :8085/rest.jsp
+      - "9090:9090" # Thrift API
+      - "9095:9095" # Thrift Web UI at :9095/thrift.jsp
+      - "2181:2181" # Embedded zookeeper cluster
+      - "16010:16010" # HBase Master Web UI at :16010/master-status; ZK at :16010/zk.jsp
+    volumes:
+      - /data/hbase:/data
+      # - /data/
+
+  ml:
+    image: datuh/pyml:latest
+    hostname: ml
+    environment:
+      RABBIT_PORT_6372_TCP: 'rabbit'
+      RABBIT_ENV_USER: 'guest'
+      RABBIT_ENV_PASS: 'guest'
+      RABBIT_ENV_VHOST: ''
+      # BROKER_URL: 'amqp://{user}:{password}@{hostname}/{vhost}'
+      API_HOSTNAME: 'web:8000'
+      API_USERNAME: 'admin'
+      API_PASSWORD: 'password123'
+      HBASE_PORT_9090_TCP: 'hbase'
+    volumes:
+      - /data/pyml/logs:/app/logs
+      - /data/pyml/files:/app/files

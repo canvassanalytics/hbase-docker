@@ -20,4 +20,9 @@
     <value>hbase-docker</value>
   </property>
 
+  <property>
+      <name>hbase.thrift.connection.max-idletime</name>
+      <value>1800000</value>
+  </property>
+
 </configuration>
