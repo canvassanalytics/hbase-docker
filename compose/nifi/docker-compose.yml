@@ -1,0 +1,22 @@
+version: '2'
+
+services:
+  nifi:
+    image: xemuliam/nifi:1.3
+    hostname: nifi
+    environment:
+      BANNER_TEXT: 'DAT-UH Flow'
+    volumes:
+      - /data/nifi/logs:/opt/nifi/logs
+      - /data/nifi/flowfile_repository:/opt/nifi/flowfile_repository
+      - /data/nifi/database_repository:/opt/nifi/database_repository
+      - /data/nifi/content_repository:/opt/nifi/content_repository
+      - /data/nifi/provenance_repository:/opt/nifi/provenance_repository
+      - /data/nifi/datafiles:/opt/datafiles
+      - /data/nifi/scriptfiles:/opt/scriptfiles
+      - /data/nifi/certfiles:/opt/certfiles
+    ports:
+      - "18080:8080"
+      - "18081:8081"
+      - "18443:8443"
+    # entrypoint: ./opt/nifi/start_nifi.sh

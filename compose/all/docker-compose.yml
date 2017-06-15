@@ -3,7 +3,7 @@ version: '2'
 services:
   # PostgreSQL database
   db:
-    image: postgres:latest
+    image: postgres:9.6.3
     environment:
       POSTGRES_DB: 'datuhml'
       POSTGRES_USER: 'datuhmluser'
@@ -28,7 +28,7 @@ services:
 
   # Django web server
   web:
-    image: datuh/datuhweb
+    image: datuh/datuhweb:latest
     hostname: web
     environment:
       POSTGRES_PORT_5432_TCP: 'db'
@@ -50,7 +50,7 @@ services:
 
   # Celery worker
   worker:
-    image: datuh/datuhweb
+    image: datuh/datuhweb:latest
     hostname: worker
     environment:
       RABBIT_PORT_6372_TCP: 'rabbit'
@@ -65,7 +65,7 @@ services:
 
   # Hbase Server
   hbase:
-    image: datuh/hbase-docker
+    image: datuh/hbase-docker:latest
     hostname: hbase
     ports:
       - "8080:8080" # REST API
