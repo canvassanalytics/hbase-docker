@@ -19,7 +19,7 @@ but this hasn't been fixed yet.
 Build Image
 -----------
 
-    $ docker build -t dajobe/hbase .
+    $ docker build -t datuh/hbase .
 
 
 Pull image
@@ -27,9 +27,7 @@ Pull image
 
 If you want to pull the image already built then use this
 
-    $ docker pull dajobe/hbase
-
-More details at https://hub.docker.com/r/dajobe/hbase/
+    $ docker pull datuh/hbase
 
 
 Run HBase
@@ -195,9 +193,19 @@ the links work!
 
 
 
-Notes
+Loading on Server not connected to Internet
 -----
 
-[1] http://happybase.readthedocs.org/en/latest/
+From a computer with internet access
 
-[2] https://github.com/wbolster/happybase
+    $ docker pull <image_name>
+    $ docker save -o <image_name.docker> <image_name>
+
+This will save the image to the current directory in a file of image_name.docker
+
+    $ scp <file_name>.docker <username>@<hostname>: /file/path/on/server
+
+This will copy the docker image to the destination server
+From the server run:
+    
+    $ docker load <file_name>.docker
