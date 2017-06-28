@@ -28,11 +28,11 @@ services:
 
   # Django web server
   web:
-    image: datuh/datuhweb:1.0
+    image: datuh/datuhweb:latest
     hostname: web
     environment:
       POSTGRES_PORT_5432_TCP: 'db'
-      SERVER_HOST_NAME: 'preprodfullstack.centralus.cloudapp.azure.com' # Add the DNS or IP that will be used to connect to the website
+      SERVER_HOST_NAME: '192.168.1.101' # Add the DNS or IP that will be used to connect to the website
       RABBIT_PORT_6372_TCP: 'rabbit'
       RABBIT_ENV_USER: 'guest'
       RABBIT_ENV_RABBITMQ_PASS: 'guest'
@@ -50,7 +50,7 @@ services:
 
   # Celery worker
   worker:
-    image: datuh/datuhweb:1.0
+    image: datuh/datuhweb:latest
     hostname: worker
     environment:
       RABBIT_PORT_6372_TCP: 'rabbit'
@@ -66,7 +66,7 @@ services:
 
   # Hbase Server
   hbase:
-    image: datuh/hbase-docker:1
+    image: datuh/hbase-docker:latest
     hostname: hbase
     ports:
       - "8080:8080" # REST API
@@ -80,7 +80,7 @@ services:
 
   # pyml server
   ml:
-    image: datuh/pyml:1.0
+    image: datuh/pyml:latest
     hostname: ml
     environment:
       RABBIT_PORT_6372_TCP: 'rabbit'
@@ -95,24 +95,3 @@ services:
     volumes:
       - /data/pyml/logs:/app/logs
       - /data/pyml/files:/app/files
-
-  # NIFI Server
-  nifi:
-    image: datuh/nifi:1.0
-    hostname: nifi
-    environment:
-      BANNER_TEXT: 'DAT-UH Flow'
-    volumes:
-      - /data/nifi/logs:/opt/nifi/logs
-      - /data/nifi/flowfile_repository:/opt/nifi/flowfile_repository
-      - /data/nifi/database_repository:/opt/nifi/database_repository
-      - /data/nifi/content_repository:/opt/nifi/content_repository
-      - /data/nifi/provenance_repository:/opt/nifi/provenance_repository
-      - /data/nifi/conf/archive:/opt/nifi/conf/archive
-      - /data/nifi/datafiles:/opt/datafiles
-      - /data/nifi/scriptfiles:/opt/scriptfiles
-      - /data/nifi/certfiles:/opt/certfiles
-    ports:
-      - "18080:8080"
-      - "18081:8081"
-      - "18443:8443"
