@@ -9,9 +9,18 @@ services:
       POSTGRES_USER: 'datuhmluser'
       POSTGRES_PASSWORD: 'datuhML4all!'
     volumes:
-      - /data/postgresql-persist:/var/lib/postgresql/data
+      - ~/data/postgresql-persist:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  # Redis
+  redis:
+    image: redis:3.0
+    hostname: redis
+    volumes_from:
+      - reddata
+    ports:
+      - "6379:6379"
 
   # RabbitMQ
   rabbit:
@@ -24,39 +33,41 @@ services:
       - "15672:15672"
       - "5672:5672"
     volumes:
-      - /data/rabbitmq-persist:/var/lib/rabbitmq
+      - ~/data/rabbitmq-persist:/var/lib/rabbitmq
 
   # Django web server
   web:
-    image: datuh/datuhweb:1.0
+    image: datuh/datuhweb:channels
     hostname: web
     environment:
       POSTGRES_PORT_5432_TCP: 'db'
-      SERVER_HOST_NAME: 'preprodfullstack.centralus.cloudapp.azure.com' # Add the DNS or IP that will be used to connect to the website
+      SERVER_HOST_NAME: 'datuhstage01.northcentralus.cloudapp.azure.com' # Add the DNS or IP that will be used to connect to the website
       RABBIT_PORT_6372_TCP: 'rabbit'
       RABBIT_ENV_USER: 'guest'
       RABBIT_ENV_RABBITMQ_PASS: 'guest'
       RABBIT_ENV_VHOST: ''
+      REDIS_URL: 'redis://redis:6379'
     volumes:
-      - /data/django-media:/app/media
+      - ~/data/django-media:/app/media
     command: ./run_web.sh
     ports:
       - "8000:8000"
     links:
       - db
       - rabbit
+      - redis
     depends_on:
       - db
 
   # Celery worker
   worker:
-    image: datuh/datuhweb:1.0
+    image: datuh/datuhweb:channels
     hostname: worker
     environment:
       RABBIT_PORT_6372_TCP: 'rabbit'
       POSTGRES_PORT_5432_TCP: 'db'
     volumes:
-      - /data/django-media:/app/media
+      - ~/data/django-media:/app/media
     entrypoint: ./run_celery.sh
     links:
       - db
@@ -76,7 +87,7 @@ services:
       - "2181:2181" # Embedded zookeeper cluster
       - "16010:16010" # HBase Master Web UI at :16010/master-status; ZK at :16010/zk.jsp
     volumes:
-      - /data/hbase:/data
+      - ~/data/hbase:/data
 
   # pyml server
   ml:
@@ -93,8 +104,8 @@ services:
       API_PASSWORD: 'password123'
       HBASE_PORT_9090_TCP: 'hbase'
     volumes:
-      - /data/pyml/logs:/app/logs
-      - /data/pyml/files:/app/files
+      - ~/data/pyml/logs:/app/logs
+      - ~/data/pyml/files:/app/files
 
   # NIFI Server
   nifi:
@@ -103,20 +114,25 @@ services:
     environment:
       BANNER_TEXT: 'DAT-UH Flow'
     volumes:
-      - /data/nifi/logs:/opt/nifi/logs
-      - /data/nifi/flowfile_repository:/opt/nifi/flowfile_repository
-      - /data/nifi/database_repository:/opt/nifi/database_repository
-      - /data/nifi/content_repository:/opt/nifi/content_repository
-      - /data/nifi/provenance_repository:/opt/nifi/provenance_repository
-      - /data/nifi/conf/archive:/opt/nifi/conf/archive
-      - /data/nifi/datafiles:/opt/datafiles
-      - /data/nifi/scriptfiles:/opt/scriptfiles
-      - /data/nifi/certfiles:/opt/certfiles
+      - ~/data/nifi/logs:/opt/nifi/logs
+      - ~/data/nifi/flowfile_repository:/opt/nifi/flowfile_repository
+      - ~/data/nifi/database_repository:/opt/nifi/database_repository
+      - ~/data/nifi/content_repository:/opt/nifi/content_repository
+      - ~/data/nifi/provenance_repository:/opt/nifi/provenance_repository
+      - ~/data/nifi/conf/archive:/opt/nifi/conf/archive
+      - ~/data/nifi/datafiles:/opt/datafiles
+      - ~/data/nifi/scriptfiles:/opt/scriptfiles
+      - ~/data/nifi/certfiles:/opt/certfiles
     ports:
       - "18080:8080"
       - "18081:8081"
       - "18443:8443"
 
-
+  # Redis Data Container
+  reddata:
+    image: cogniteev/echo
+    command: echo 'Data Container for Redis'
+    volumes:
+      - ~/data/redis:/data
 
 # docker run -d --name=hadoopserver -p 8030:8030 -p 8040:8040 -p 8042:8042 -p 8088:8088 -p 19888:19888 -p 49707:49707 -p 50010:50010 -p 50020:50020 -p 50070:50070 -p 50075:50075 -p 50090:50090 -p 9000:9000 sequenceiq/hadoop-docker:2.7.1 /etc/bootstrap.sh
