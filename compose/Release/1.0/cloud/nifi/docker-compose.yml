@@ -18,6 +18,6 @@ services:
       - ~/data/nifi/scriptfiles:/opt/scriptfiles
       - ~/data/nifi/certfiles:/opt/certfiles
     ports:
-      - "8080:8080"
+      - "80:8080"
       - "8081:8081"
-      - "8443:8443"
+      - "443:8443"

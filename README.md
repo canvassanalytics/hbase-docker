@@ -209,3 +209,9 @@ This will copy the docker image to the destination server
 From the server run:
     
     $ docker load <file_name>.docker
+
+Starting HBase Thrift Server on HDInsight
+-----
+SSH to the cluster (get from HDInsight Blade)
+
+    $ sudo /usr/hdp/current/hbase-master/bin/hbase-daemon.sh start thrift

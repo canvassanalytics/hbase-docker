@@ -25,13 +25,13 @@ services:
 
   # Django web server
   web:
-    image: datuh/datuhweb:latest
+    image: datuh/datuhweb:1.0
     hostname: web
     environment:
-      POSTGRES_PORT_5432_TCP: 'datuhpreprod.postgres.database.azure.com'
-      POSTGRES_DB_USERNAME: 'datuhml@datuhpreprod'
+      POSTGRES_PORT_5432_TCP: 'canvassproddb.postgres.database.azure.com'
+      POSTGRES_DB_USERNAME: 'datuhml@canvassproddb'
       POSTGRES_DB_PASSWORD: 'all4MLhutad'
-      SERVER_HOST_NAME: 'preprodweb01.northcentralus.cloudapp.azure.com' # Add the DNS or IP that will be used to connect to the website
+      SERVER_HOST_NAME: 'prodweb01.northcentralus.cloudapp.azure.com' # Add the DNS or IP that will be used to connect to the website
       RABBIT_PORT_6372_TCP: 'rabbit'
       RABBIT_ENV_USER: 'guest'
       RABBIT_ENV_RABBITMQ_PASS: 'guest'
@@ -41,19 +41,19 @@ services:
       - ~/data/django-media:/app/media
     command: ./run_web.sh
     ports:
-      - "8000:8000"
+      - "80:8000"
     links:
       - rabbit
       - redis
 
   # Celery worker
   worker:
-    image: datuh/datuhweb:latest
+    image: datuh/datuhweb:1.0
     hostname: worker
     environment:
       RABBIT_PORT_6372_TCP: 'rabbit'
-      POSTGRES_PORT_5432_TCP: 'datuhpreprod.postgres.database.azure.com'
-      POSTGRES_DB_USERNAME: 'datuhml@datuhpreprod'
+      POSTGRES_PORT_5432_TCP: 'canvassproddb.postgres.database.azure.com'
+      POSTGRES_DB_USERNAME: 'datuhml@canvassproddb'
       POSTGRES_DB_PASSWORD: 'all4MLhutad'
     volumes:
       - ~/data/django-media:/app/media
