@@ -4,7 +4,7 @@ services:
 
   # pyml server
   ml:
-    image: datuh/pyml:1.1
+    image: canvass/pyml:1.1
     hostname: ml
     environment:
       RABBIT_PORT_6372_TCP: '10.2.0.5' # Use VLAN IP to avoid going outside the network
