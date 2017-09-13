@@ -1,0 +1,20 @@
+version: '2'
+
+services:
+
+  # pyml server
+  ml:
+    image: datuh/pyml:1.1
+    hostname: ml
+    environment:
+      RABBIT_PORT_6372_TCP: '10.2.0.5' # Use VLAN IP to avoid going outside the network
+      RABBIT_ENV_USER: 'guest'
+      RABBIT_ENV_PASS: 'guest'
+      RABBIT_ENV_VHOST: ''
+      API_HOSTNAME: 'preprodweb01.northcentralus.cloudapp.azure.com'
+      API_USERNAME: 'admin'
+      API_PASSWORD: 'datuhML4all!'
+      HBASE_PORT_9090_TCP: '10.2.0.13'
+    volumes:
+      - ~/data/pyml/logs:/app/logs
+      - ~/data/pyml/files:/app/files
