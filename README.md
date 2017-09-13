@@ -208,7 +208,7 @@ This will save the image to the current directory in a file of image_name.docker
 This will copy the docker image to the destination server
 From the server run:
     
-    $ docker load <file_name>.docker
+    $ docker load --input <file_name>.docker
 
 Starting HBase Thrift Server on HDInsight
 -----
