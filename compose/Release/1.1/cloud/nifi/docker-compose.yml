@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  # NIFI Server
+  nifi:
+    image: datuh/nifi:1.0
+    hostname: nifi
+    environment:
+      BANNER_TEXT: 'DAT-UH Flow'
+    volumes:
+      - ~/data/nifi/logs:/opt/nifi/logs
+      - ~/data/nifi/flowfile_repository:/opt/nifi/flowfile_repository
+      - ~/data/nifi/database_repository:/opt/nifi/database_repository
+      - ~/data/nifi/content_repository:/opt/nifi/content_repository
+      - ~/data/nifi/provenance_repository:/opt/nifi/provenance_repository
+      - ~/data/nifi/conf/archive:/opt/nifi/conf/archive
+      - ~/data/nifi/datafiles:/opt/datafiles
+      - ~/data/nifi/scriptfiles:/opt/scriptfiles
+      - ~/data/nifi/certfiles:/opt/certfiles
+    ports:
+      - "80:8080"
+      - "8081:8081"
+      - "443:8443"
