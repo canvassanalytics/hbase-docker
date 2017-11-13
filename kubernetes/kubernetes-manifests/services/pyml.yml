@@ -1,0 +1,82 @@
+  # #############################
+  # #---        pyML        ---##
+  # #############################
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: ml
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: ml
+    spec:
+      containers:
+      - name: ml
+        image: canvass.azurecr.io/pyml
+        env:
+          - name: RABBIT_PORT_6372_TCP
+            value: 'rabbit'
+          - name: RABBIT_ENV_USER
+            valueFrom:
+              secretKeyRef:
+                name: rabbit
+                key: username
+          - name: RABBIT_ENV_PASS
+            valueFrom:
+              secretKeyRef:
+                name: rabbit
+                key: password
+          - name: API_HOSTNAME
+            value: 'web:8000'
+          - name: API_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: api
+                key: username
+          - name: API_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: api
+                key: username
+          - name: HBASE_PORT_9090_TCP
+            valueFrom:
+              secretKeyRef:
+                name: hbase
+                key: hostname
+        volumeMounts:
+          - name: ml-logs
+            mountPath: /app/logs
+          - name: ml-files
+            mountPath: /app/files
+        resources:
+          requests:
+            cpu: .2
+          limits:
+            cpu: 4
+      volumes:
+        - name: ml-logs
+          azureFile:
+            secretName: log-storage-account
+            shareName: logs
+            readOnly: false
+        - name: ml-files
+          azureFile:
+            secretName: log-storage-account
+            shareName: pyml
+            readOnly: false
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ml-scaler
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v2beta1
+    kind: Deployment
+    name: ml
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50

@@ -11,6 +11,10 @@ AcrLoginServer
 ------------------
 canvass.azurecr.io
 ```
+login to the registry (get the Username and Password from the Azure Portal in the Registry Resource > Access keys)
+```bash
+docker login canvass.azurecr.io -u myAdminName -p myPassword1
+```
 Tag your docker image
 ```bash
 docker tag pyml canvass.azurecr.io/pyml:<tagName>
@@ -18,6 +22,28 @@ docker tag pyml canvass.azurecr.io/pyml:<tagName>
 Push to the registry
 ```bash
 docker push canvass.azurecr.io/pyml:<tagName>
+```
+### Creating K8 Cluster
+```bash
+az acs create \
+--orchestrator-type kubernetes \
+--name <ProdK8> \
+--resource-group <produuctionK8> \
+--agent-vm-size <> \
+--dns-prefix <productionK8> \
+--generate-ssh-keys \
+--location <centralcanada> \
+--master-vnet-subnet-id <id> \
+--agent-vnet-subnet-id <id> \
+--ssh-key-value /path/to/public/key
+```
+To get locations:
+```bash
+az account list-locations
+```
+To get vnet-subnets
+```bash
+az network vnet subnet list --resource-group <rg> --vnet-name <vnet_name>
 ```
 
 ## Deploying to the K8 Cluster
@@ -71,3 +97,14 @@ You can view the Rolling update status with
 ```bash
 kubectl get pods --selector=app=ml
 ```
+
+# Accessing a K8 Cluster
+```bash
+az acs kubernetes get-credentials --resource-group myResourceGroup --name myK8SCluster
+```
+
+# Lanuching the K8 UI
+```bash
+az acs kubernetes browse -g [Resource Group] -n [Container service instance name]
+```
+
