@@ -1,0 +1,241 @@
+  ##############################
+  ##---  Daphne Webserver  ---##
+  ##############################
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: web
+        image: canvass.azurecr.io/datuhweb
+        env:
+          - name: ENVIROMENT
+            value: 'DEVELOP'
+          - name: RABBIT_PORT_6372_TCP
+            value: 'rabbit'
+          - name: REDIS_URL
+            value: 'redis://redis:6379'
+          - name: RABBIT_ENV_USER
+            valueFrom:
+              secretKeyRef:
+                name: rabbit
+                key: username
+          - name: RABBIT_ENV_RABBITMQ_PASS
+            valueFrom:
+              secretKeyRef:
+                name: rabbit
+                key: password
+          - name: POSTGRES_PORT_5432_TCP
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: hostname
+          - name: POSTGRES_DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: username
+          - name: POSTGRES_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: password
+          - name: SERVER_HOST_NAME
+            valueFrom:
+              secretKeyRef:
+                name: webserver
+                key: dns
+          - name: LOG_VOLUME_CELERY
+            value: '/var/log/canvass/celery'
+          - name: LOG_VOLUME_DATUHWEB
+            value: '/var/log/canvass/datuhweb'
+        command: ["/bin/sh","-c"]
+        args: ["daphne -b 0.0.0.0 -p 8001 datuhweb.asgi:channel_layer --access-log=${LOG_VOLUME_DATUHWEB}/daphne.access.log"]
+        volumeMounts:
+          - name: web-logs
+            mountPath: /var/log/canvass/datuhweb
+          - name: web-media
+            mountPath: /app/media
+        ports:
+        - containerPort: 8001
+          name: web
+      volumes:
+        - name: web-logs
+          azureFile:
+            secretName: azure-log-storage-account
+            shareName: logs
+            readOnly: False
+        - name: web-media
+          azureFile:
+            secretName: azure-log-storage-account
+            shareName: web
+            readOnly: False
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  ports:
+  - protocol: TCP
+    port: 8001
+    name: web
+  selector:
+    app: web
+---
+  ##############################
+  ##---   Daphne Worker    ---##
+  ##############################
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: daphne-worker
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: daphne-worker
+    spec:
+      containers:
+      - name: daphne-worker
+        image: canvass.azurecr.io/datuhweb:feature-issue_51_centeralized_logging
+        env:
+          - name: ENVIROMENT
+            value: 'DEVELOP'
+          - name: RABBIT_PORT_6372_TCP
+            value: 'rabbit'
+          - name: REDIS_URL
+            value: 'redis://redis:6379'
+          - name: RABBIT_ENV_USER
+            valueFrom:
+              secretKeyRef:
+                name: rabbit
+                key: username
+          - name: RABBIT_ENV_RABBITMQ_PASS
+            valueFrom:
+              secretKeyRef:
+                name: rabbit
+                key: password
+          - name: POSTGRES_PORT_5432_TCP
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: hostname
+          - name: POSTGRES_DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: username
+          - name: POSTGRES_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: password
+          - name: SERVER_HOST_NAME
+            valueFrom:
+              secretKeyRef:
+                name: webserver
+                key: dns
+          - name: LOG_VOLUME_CELERY
+            value: '/var/log/canvass/celery'
+          - name: LOG_VOLUME_DATUHWEB
+            value: /var/log/canvass/datuhweb
+        command: ["./compose/daphne/run_web.sh"]
+        volumeMounts:
+          - name: web-logs
+            mountPath: /var/log/canvass/datuhweb
+          - name: web-media
+            mountPath: /app/media
+      volumes:
+        - name: web-logs
+          azureFile:
+            secretName: azure-log-storage-account
+            shareName: logs
+            readOnly: False
+        - name: web-media
+          azureFile:
+            secretName: azure-log-storage-account
+            shareName: web
+            readOnly: False
+---
+  ##############################
+  ##---   Celery Worker    ---##
+  ##############################
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: celery-worker
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+    spec:
+      containers:
+      - name: celery-worker
+        image: canvass.azurecr.io/datuhweb:feature-issue_51_centeralized_logging
+        env:
+          - name: ENVIROMENT
+            value: 'DEVELOP'
+          - name: RABBIT_PORT_6372_TCP
+            value: 'rabbit'
+          - name: RABBIT_ENV_USER
+            valueFrom:
+              secretKeyRef:
+                name: rabbit
+                key: username
+          - name: RABBIT_ENV_RABBITMQ_PASS
+            valueFrom:
+              secretKeyRef:
+                name: rabbit
+                key: password
+          - name: POSTGRES_PORT_5432_TCP
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: hostname
+          - name: POSTGRES_DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: username
+          - name: POSTGRES_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres
+                key: password
+          - name: SERVER_HOST_NAME
+            valueFrom:
+              secretKeyRef:
+                name: webserver
+                key: dns
+          - name: LOG_VOLUME_CELERY
+            value: '/var/log/canvass/celery'
+          - name: LOG_VOLUME_DATUHWEB
+            value: /var/log/canvass/datuhweb
+        command: ["./compose/celery/run_celery.sh"]
+        volumeMounts:
+          - name: web-logs
+            mountPath: /var/log/canvass/celery
+          - name: web-media
+            mountPath: /app/media
+      volumes:
+        - name: web-logs
+          azureFile:
+            secretName: azure-log-storage-account
+            shareName: logs
+            readOnly: False
+        - name: web-media
+          azureFile:
+            secretName: azure-log-storage-account
+            shareName: web
+            readOnly: False

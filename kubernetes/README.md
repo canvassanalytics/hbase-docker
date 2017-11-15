@@ -32,8 +32,9 @@ az acs create \
 --agent-vm-size <> \
 --dns-prefix <productionK8> \
 --generate-ssh-keys \
---location <centralcanada> \
+--location <canadacentral> \
 --master-vnet-subnet-id <id> \
+--master-first-consecutive-static-ip 10.x.x.x \
 --agent-vnet-subnet-id <id> \
 --ssh-key-value /path/to/public/key
 ```

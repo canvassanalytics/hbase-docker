@@ -19,32 +19,17 @@ spec:
           - name: RABBIT_PORT_6372_TCP
             value: 'rabbit'
           - name: RABBIT_ENV_USER
-            valueFrom:
-              secretKeyRef:
-                name: rabbit
-                key: username
+            value: 'guest'
           - name: RABBIT_ENV_PASS
-            valueFrom:
-              secretKeyRef:
-                name: rabbit
-                key: password
+            value: 'guest'
           - name: API_HOSTNAME
-            value: 'web:8000'
+            value: 'web:8001'
           - name: API_USERNAME
-            valueFrom:
-              secretKeyRef:
-                name: api
-                key: username
+            value: 'admin'
           - name: API_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: api
-                key: username
+            value: 'password123'
           - name: HBASE_PORT_9090_TCP
-            valueFrom:
-              secretKeyRef:
-                name: hbase
-                key: hostname
+            value: hbase-cluster
         volumeMounts:
           - name: ml-logs
             mountPath: /app/logs
@@ -58,12 +43,12 @@ spec:
       volumes:
         - name: ml-logs
           azureFile:
-            secretName: log-storage-account
+            secretName: devkub01-devkubcluster01-3029b6mgmt.canadacentral.cloudapp.azure.com
             shareName: logs
             readOnly: false
         - name: ml-files
           azureFile:
-            secretName: log-storage-account
+            secretName: devkub01-devkubcluster01-3029b6mgmt.canadacentral.cloudapp.azure.com
             shareName: pyml
             readOnly: false
 ---
@@ -87,9 +72,7 @@ metadata:
   name: hbase-cluster
 spec:
   ports:
-  - protocol: TCP
-    port: 9090
-    targetPort: 9090
+  - port: 9090
 ---
 kind: Endpoints
 apiVersion: v1
