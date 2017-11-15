@@ -109,3 +109,13 @@ az acs kubernetes get-credentials --resource-group myResourceGroup --name myK8SC
 az acs kubernetes browse -g [Resource Group] -n [Container service instance name]
 ```
 
+# Communicating with External IP
+The Kubernetes routing doesn't understand how to route traffic if you are trying to connect to an IP outside the cluster, but still inside the Class B network range.
+ 
+ Reference to issue can be found here: https://github.com/Azure/acs-engine/issues/425
+ 
+ In order to make this work you have to connect to each one of the agents and update the ip table
+ ```bash
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE -d 10.4.0.0/16
+```
+Where ```10.4.0.0/16``` is the ip range of the VLAN of the resource you ware trying to connect to.  This needs to be done on all Agent nodes

@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
       - name: web
-        image: canvass.azurecr.io/datuhweb
+        image: canvass.azurecr.io/datuhweb:f68bec4-develop
         env:
-          - name: ENVIROMENT
+          - name: ENVIRONMENT
             value: 'DEVELOP'
           - name: RABBIT_PORT_6372_TCP
             value: 'rabbit'
@@ -56,8 +56,7 @@ spec:
             value: '/var/log/canvass/celery'
           - name: LOG_VOLUME_DATUHWEB
             value: '/var/log/canvass/datuhweb'
-        command: ["/bin/sh","-c"]
-        args: ["daphne -b 0.0.0.0 -p 8001 datuhweb.asgi:channel_layer --access-log=${LOG_VOLUME_DATUHWEB}/daphne.access.log"]
+        command: ["./compose/daphne/run_web.sh"]
         volumeMounts:
           - name: web-logs
             mountPath: /var/log/canvass/datuhweb
@@ -106,9 +105,9 @@ spec:
     spec:
       containers:
       - name: daphne-worker
-        image: canvass.azurecr.io/datuhweb:feature-issue_51_centeralized_logging
+        image: canvass.azurecr.io/datuhweb:f68bec4-develop
         env:
-          - name: ENVIROMENT
+          - name: ENVIRONMENT
             value: 'DEVELOP'
           - name: RABBIT_PORT_6372_TCP
             value: 'rabbit'
@@ -148,7 +147,8 @@ spec:
             value: '/var/log/canvass/celery'
           - name: LOG_VOLUME_DATUHWEB
             value: /var/log/canvass/datuhweb
-        command: ["./compose/daphne/run_web.sh"]
+        command: ["/bin/sh","-c"]
+        args: ["python -u manage.py runworker -v2"]
         volumeMounts:
           - name: web-logs
             mountPath: /var/log/canvass/datuhweb
@@ -182,9 +182,9 @@ spec:
     spec:
       containers:
       - name: celery-worker
-        image: canvass.azurecr.io/datuhweb:feature-issue_51_centeralized_logging
+        image: canvass.azurecr.io/datuhweb:f68bec4-develop
         env:
-          - name: ENVIROMENT
+          - name: ENVIRONMENT
             value: 'DEVELOP'
           - name: RABBIT_PORT_6372_TCP
             value: 'rabbit'
