@@ -23,7 +23,7 @@ spec:
           - name: RABBIT_ENV_PASS
             value: 'guest'
           - name: API_HOSTNAME
-            value: 'web:8000'
+            value: 'web:8001'
           - name: API_USERNAME
             value: 'admin'
           - name: API_PASSWORD
@@ -32,7 +32,7 @@ spec:
             value: '10.4.2.18'
         volumeMounts:
           - name: aiinterpret-logs
-            mountPath: /app/logs
+            mountPath: /app/aiinterpret/logs
         resources:
           requests:
             cpu: .2

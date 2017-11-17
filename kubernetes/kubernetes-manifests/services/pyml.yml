@@ -47,7 +47,7 @@ spec:
                 key: hostname
         volumeMounts:
           - name: ml-logs
-            mountPath: /app/logs
+            mountPath: /app/canvassai/logs
           - name: ml-files
             mountPath: /app/files
         resources:
@@ -80,23 +80,4 @@ spec:
   minReplicas: 2
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: hbase-cluster
-spec:
-  ports:
-  - protocol: TCP
-    port: 9090
-    targetPort: 9090
----
-kind: Endpoints
-apiVersion: v1
-metadata:
-  name: hbase-cluster
-subsets:
-  - addresses:
-      - ip: 10.4.2.18
-    ports:
-      - port: 9090
+

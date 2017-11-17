@@ -29,10 +29,10 @@ spec:
           - name: API_PASSWORD
             value: 'password123'
           - name: HBASE_PORT_9090_TCP
-            value: hbase-cluster
+            value: '10.4.2.18'
         volumeMounts:
           - name: ml-logs
-            mountPath: /app/logs
+            mountPath: /app/canvassai/logs
           - name: ml-files
             mountPath: /app/files
         resources:
@@ -43,12 +43,12 @@ spec:
       volumes:
         - name: ml-logs
           azureFile:
-            secretName: devkub01-devkubcluster01-3029b6mgmt.canadacentral.cloudapp.azure.com
+            secretName: azure-log-storage-account
             shareName: logs
             readOnly: false
         - name: ml-files
           azureFile:
-            secretName: devkub01-devkubcluster01-3029b6mgmt.canadacentral.cloudapp.azure.com
+            secretName: azure-log-storage-account
             shareName: pyml
             readOnly: false
 ---
@@ -65,21 +65,3 @@ spec:
   minReplicas: 2
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
----
-kind: Service
-apiVersion: v1
-metadata:
-  name: hbase-cluster
-spec:
-  ports:
-  - port: 9090
----
-kind: Endpoints
-apiVersion: v1
-metadata:
-  name: hbase-cluster
-subsets:
-  - addresses:
-      - ip: 10.4.2.18
-    ports:
-      - port: 9090

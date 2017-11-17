@@ -24,6 +24,15 @@ Push to the registry
 docker push canvass.azurecr.io/pyml:<tagName>
 ```
 ### Creating K8 Cluster
+To get locations:
+```bash
+az account list-locations
+```
+To get vnet-subnets
+```bash
+az network vnet subnet list --resource-group <rg> --vnet-name <vnet_name>
+```
+The command to create the cluster
 ```bash
 az acs create \
 --orchestrator-type kubernetes \
@@ -38,16 +47,21 @@ az acs create \
 --agent-vnet-subnet-id <id> \
 --ssh-key-value /path/to/public/key
 ```
-To get locations:
-```bash
-az account list-locations
-```
-To get vnet-subnets
-```bash
-az network vnet subnet list --resource-group <rg> --vnet-name <vnet_name>
-```
+Using the above script you must do the following:
+* Apply the Network Security Group created to the Subnet used for the cluster
+* Applyt the Route Table created created to the Subnet used for the cluster
 
 ## Deploying to the K8 Cluster
+Before deploying to a new environment you must setup the Storage Account to have the File shares used by the apps, these include:
+* logs
+* nifi-certfiles
+* nifi-datafiles
+* nifi-repo
+* pyml
+* rabbitmq
+* redis
+* web
+
 To deploy based on file
 ```bash
 kubectl create -f canvass-all-latests.yml 
