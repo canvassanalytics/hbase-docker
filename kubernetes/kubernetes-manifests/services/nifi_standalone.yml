@@ -14,13 +14,15 @@ spec:
     spec:
       containers:
       - name: nifi
-        image: canvass.azurecr.io/nifi:latest
+        image: canvass.azurecr.io/nifi:optimization
         env:
           - name: BANNER_TEXT
             value: 'Canvass Flow'
         volumeMounts:
           - name: repo
             mountPath: /repo
+          - name: flow-config
+            mountPath: /flowfile
           - name: nifi-logs
             mountPath: /opt/nifi/logs
           - name: nifi-datafiles
@@ -39,6 +41,11 @@ spec:
           azureFile:
             secretName: azure-log-storage-account
             shareName: nifi-repo
+            readOnly: False
+        - name: flow-config
+          azureFile:
+            secretName: azure-log-storage-account
+            shareName: nifi-flowconfig
             readOnly: False
         - name: nifi-logs
           azureFile:

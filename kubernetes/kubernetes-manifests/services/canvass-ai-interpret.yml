@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: aiinterpret
-        image: canvass.azurecr.io/aiinterpret
+        image: canvass.azurecr.io/aiinterpret:data_interpretation-2091072
         env:
           - name: RABBIT_PORT_6372_TCP
             value: 'rabbit'
@@ -33,6 +33,8 @@ spec:
         volumeMounts:
           - name: aiinterpret-logs
             mountPath: /app/aiinterpret/logs
+          - name: pyml-files
+            mountPath: /app/files
         resources:
           requests:
             cpu: .2
@@ -43,5 +45,10 @@ spec:
           azureFile:
             secretName: devkub01-devkubcluster01-3029b6mgmt.canadacentral.cloudapp.azure.com
             shareName: logs
+            readOnly: false
+        - name: pyml-files
+          azureFile:
+            secretName: azure-log-storage-account
+            shareName: pyml
             readOnly: false
 ---
