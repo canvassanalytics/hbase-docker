@@ -215,3 +215,34 @@ Starting HBase Thrift Server on HDInsight
 SSH to the cluster (get from HDInsight Blade)
 
     $ sudo /usr/hdp/current/hbase-master/bin/hbase-daemon.sh start thrift
+    
+# Some Tuning Parameters for HBase
+### Zookeeper Session Timeout
+```bash
+<property>
+    <name>zookeeper.session.timeout</name>
+    <value>20000</value>
+</property>
+```
+### HBase RPC Timeout
+```bash
+<property>
+    <name>hbase.rpc.timeout</name>
+    <value>900000</value> <!-- 15 minutes -->
+</property>
+```
+### HBase Region Server Lease Period
+```bash
+<property>
+    <name>hbase.regionserver.lease.period</name>
+    <value>900000</value> <!-- 900 000, 15 minutes -->
+</property>
+```
+### HBase Thrift Connection Max
+Sets an unlimited timeout on the Thrift Connect,  this is useful for for when connection are idle for a while
+```bash
+<property>
+    <name>hbase.thrift.connection.max-idletime</name>
+    <value>1800000</value>
+</property>
+```
