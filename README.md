@@ -136,31 +136,6 @@ Thrift API port because [Happybase][1] [2] uses Thrift to talk to HBase.
 use `pip install --user happybase` to get it just for me)
 
 
-Test HBase is working from Java
--------------------------------
-
-    $ docker run --rm -it --link $id:hbase-docker dajobe/hbase hbase shell
-    HBase Shell; enter 'help<RETURN>' for list of supported commands.
-    Type "exit<RETURN>" to leave the HBase Shell
-    Version 0.94.11, r1513697, Wed Aug 14 04:54:46 UTC 2013
-
-    hbase(main):001:0> status
-    1 servers, 0 dead, 3.0000 average load
-
-    hbase(main):002:0> list
-    TABLE
-    table-name
-    1 row(s) in 0.0460 seconds
-
-Showing the `table-name` table made in the happybase example above.
-
-Alternatively if you have the Hbase distribution available on the
-host you can use `bin/hbase shell` if the hbase configuration has
-been set up to connect to host `hbase-docker` zookeeper port 2181 to
-get the servers via configuration property `hbase.zookeeper.quorum`
-
-
-
 Proxy HBase UIs locally
 -----------------------
 
@@ -246,3 +221,66 @@ Sets an unlimited timeout on the Thrift Connect,  this is useful for for when co
     <value>1800000</value>
 </property>
 ```
+
+# Backing up and restoring data from one cluster to another
+## From the Source
+connect to the head node and run
+```
+mkdir backups
+pwd
+hbase org.apache.hadoop.hbase.mapreduce.Export "<tableName>" "/results/from/pwd"
+```
+If you run that from the root login directory it will just be saved locally, optionall you could supply "/<path>/<to>/<dir>"
+
+Now copy it to the other server head node
+```
+ls
+scp ~/<filename.x>/ username@remote:~
+del filename.x
+```
+the `ls` shows you the name of the file
+`scp` copies the file to the destination server
+`del` deletes the file to clean up the server
+
+## from the Destination server head node
+```
+ls
+```
+this should show you the file
+Now import the file
+```
+hbase org.apache.hadoop.hbase.mapreduce.Import "<tableName>" "."
+```
+You will either need a new table name or you will first have to disable the exiting table
+
+
+## From Source
+connect to the head node and run
+```
+$ hbase org.apache.hadoop.hbase.mapreduce.Export "<table_name>" "wasbs://<Blob_Container>@<Storage_Account_Name>.blob.core.windows.net/hbase/backups/<folder_name>"
+```
+* <table_name>: is the table name you want to backup
+* <Blob_Container>: is the name of the blob used by hbase; get this from Azure Explorer
+* <Storage_Account_Name>: the the storage account name used by HDInsight; get this from the azure portal
+* <Flolder_Name>: is the directory on azure storage where the backup will be place
+
+Now go to Azure storage explorer and you should see something in the blob container storage account at hbase-prod/hbase/backups
+
+Copy the contents of that directory to the same directory on the destination server azure storage blob account
+
+## From Destination
+If you are copying to a new table on the destination you will first need to create the table using:
+```
+$ hbase shell
+hbase(main):003:0> create 'table-name', 'data'
+```
+That will create the table named `table-name` with a column family of `data`
+
+Then you can run the import
+```
+$ hbase org.apache.hadoop.hbase.mapreduce.Import "<table_name>" "wasbs://<Blob_Container>@<Storage_Account_Name>.blob.core.windows.net/hbase/backups/<Flolder_Name>"
+```
+* <table_name>: the table name on the destination instance
+* <Blob_Container>:  is the name of the blob used by the destination hbase instance; get this from Azure Explorer
+* <Storage_Account_Name>: the the storage account name used by the destination HDInsight instance; get this from the azure portal
+* <Flolder_Name>: is the directory where you copied the file to

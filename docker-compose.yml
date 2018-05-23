@@ -14,4 +14,10 @@ services:
       - "2181:2181" # Embedded zookeeper cluster
       - "16010:16010" # HBase Master Web UI at :16010/master-status; ZK at :16010/zk.jsp
     volumes:
-      - /data/hbase:/data
+      - ./data/hbase:/data
+
+
+networks:
+  default:
+    external:
+      name: datuhweb_default
